@@ -1,0 +1,156 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0e0e0e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 210px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: clamp(14px, 2vw, 22px);
+  line-height: 1;
+  color: #e8e8e8;
+  white-space: pre;
+  user-select: none;
+  gap: 0;
+}
+
+/* ── Stickman wrap (relative anchor for callout) ───── */
+#stickman-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#stickman {
+  will-change: transform;
+  text-align: center;
+  margin-bottom: -2px;
+}
+
+#ground {
+  opacity: 0.5;
+}
+
+/* ── Speech bubble callout ──────────────────────────── */
+#callout {
+  position: absolute;
+  bottom: calc(100% + 14px); /* floats above stickman head */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #13131f;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: #e8e8e8;
+  white-space: pre-wrap;
+  min-width: 220px;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 10;
+}
+
+/* Downward triangle pointing at the stickman head */
+#callout::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+
+#callout.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#callout a {
+  color: #5b9bd5;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+#callout a:hover {
+  color: #90c4f0;
+}
+
+/* Blinking cursor during typing */
+#callout-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 0.85em;
+  background: #e8e8e8;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink 0.7s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Variation label ────────────────────────────────── */
+#label {
+  position: fixed;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #e8e8e8;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+#label.visible { opacity: 0.4; }
+
+/* ── Hint bar ───────────────────────────────────────── */
+#hint {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: #e8e8e8;
+  opacity: 0.2;
+  transition: opacity 0.6s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+#hint.intro-mode {
+  opacity: 0;
+}
+
+#hint .k {
+  opacity: 0.7;
+  margin-right: 0.25em;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-size: 0.5rem;
+}
