@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Minimal dark background with slightly rounded corners -->
+  <rect width="64" height="64" fill="#0e0e0e" rx="12"/>
+  
+  <!-- Stickman head 'O' in monospace font -->
+  <text 
+    x="32" 
+    y="46" 
+    font-family="monospace, 'Courier New'" 
+    font-size="44" 
+    fill="#e8e8e8" 
+    text-anchor="middle"
+  >O</text>
+
+  <!-- Left eye -->
+  <circle cx="25" cy="33" r="2.5" fill="#0e0e0e"/>
+  
+  <!-- Right eye -->
+  <circle cx="39" cy="33" r="2.5" fill="#0e0e0e"/>
+</svg>
