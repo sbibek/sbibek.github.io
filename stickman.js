@@ -4,8 +4,8 @@
 */
 
 const stickmanEl = document.getElementById('stickman');
-const labelEl    = document.getElementById('label');
-const hintEl     = document.getElementById('hint');
+const labelEl = document.getElementById('label');
+const hintEl = document.getElementById('hint');
 
 // ── Helpers ────────────────────────────────────────────
 
@@ -77,24 +77,33 @@ const VARIATIONS = [
     ],
   },
 
-  // 3 — Spin Jump (body rotates through the air)
+  // 3 — Robot Jump (stiff mechanical movement, elevator arc)
   {
-    name: 'spin',
-    cycleMs: 1800, jumpHeight: 115,
-    airStart: 0.15, airEnd: 0.80,
+    name: 'robot',
+    cycleMs: 2000, jumpHeight: 90,
+    airStart: 0.18, airEnd: 0.78,
     poseMap: [
-      [0.00, 0.08, `  O\n /|\\\n / \\`],
-      [0.08, 0.15, `  O\n /|\\\n /V\\`],
-      [0.15, 0.25, `  O\n -|-\n / \\`],   // arms horizontal (0°)
-      [0.25, 0.36, `  O\n  |>\n / \\`],   // quarter spin (90°)
-      [0.36, 0.50, `  O\n  |\n_/ \\_`],   // half spin, arms tucked
-      [0.50, 0.62, `  O\n <|\n_/ \\_`],   // three-quarter (270°)
-      [0.62, 0.72, `  O\n -|-\n_/ \\_`],  // full rotation arms out
-      [0.72, 0.80, `  O\n /|\\\n_/ \\_`],
-      [0.80, 0.88, `  O\n /|\\\n /|\\`],
-      [0.88, 0.95, `  O\n /|\\\n /V\\`],
-      [0.95, 1.00, `  O\n /|\\\n / \\`],
+      [0.00, 0.10, `  O\n -|-\n / \\`],    // stand — arms rigid horizontal
+      [0.10, 0.18, `  O\n -|-\n /=\\`],    // mechanical squat prep
+      [0.18, 0.30, `  O\n [|]\n / \\`],    // launch — boxy enclosed torso
+      [0.30, 0.50, `  O\n [|]\n  |`],      // rising stiff, legs straight down
+      [0.50, 0.65, `  O\n=|=\n  |`],       // hovering at peak — arms max-wide
+      [0.65, 0.78, `  O\n [|]\n  |`],      // descending stiff
+      [0.78, 0.86, `  O\n -|-\n /|\\`],    // mechanical land
+      [0.86, 0.93, `  O\n -|-\n /=\\`],    // rigid shock absorb
+      [0.93, 1.00, `  O\n -|-\n / \\`],    // back to stand
     ],
+    // Elevator movement: linear rise → pause at top → linear drop
+    customY(t) {
+      const h = this.jumpHeight;
+      const a = this.airStart;
+      const b = this.airEnd;
+      if (t < a || t > b) return 0;
+      const p = (t - a) / (b - a); // 0..1
+      if (p < 0.35) return -h * (p / 0.35);          // linear rise
+      if (p < 0.65) return -h;                        // hold at peak
+      return -h * (1 - (p - 0.65) / 0.35);           // linear drop
+    },
   },
 
   // 4 — Star Jump (full X shape at peak)
@@ -229,12 +238,12 @@ const VARIATIONS = [
 
 // ── State ──────────────────────────────────────────────
 
-let varIndex  = 0;
-let startTs   = null;
-let prevT     = 0;
+let varIndex = 0;
+let startTs = null;
+let prevT = 0;
 let isShaking = false;
 let labelTimer = null;
-let introMode  = false;          // true while the intro sequence is playing
+let introMode = false;          // true while the intro sequence is playing
 
 const STAND_POSE = `  O\n /|\\\n / \\`; // used when frozen
 
@@ -272,8 +281,13 @@ function triggerShake() {
 
 function getY(t) {
   const v = VARIATIONS[varIndex];
-  if (v.customY) return v.customY.call(v, t);
-  return parabola(t, v.airStart, v.airEnd, v.jumpHeight);
+  // Cap to 22% of viewport height so jumps stay on-screen on mobile
+  const h = Math.min(v.jumpHeight, window.innerHeight * 0.22);
+  if (v.customY) {
+    const scale = v.jumpHeight > 0 ? h / v.jumpHeight : 1;
+    return v.customY.call(v, t) * scale;
+  }
+  return parabola(t, v.airStart, v.airEnd, h);
 }
 
 // ── Animation loop ─────────────────────────────────────
@@ -311,7 +325,7 @@ function loop(ts) {
 
 // ── Intro sequence (Enter key) ─────────────────────────────────
 
-const calloutEl     = document.getElementById('callout');
+const calloutEl = document.getElementById('callout');
 const calloutTextEl = document.getElementById('callout-text');
 
 function pause(ms) {
@@ -357,7 +371,7 @@ async function runIntro() {
   await pause(350); // let fade-in settle
 
   // Line 1 — greeting
-  await typeText('Hi. I am Bibek Shrestha.', 65);
+  await typeText('Hi! I am Bibek Shrestha', 65);
   await pause(700);
 
   // Line 2 — LinkedIn
@@ -366,9 +380,9 @@ async function runIntro() {
 
   // Inject link (no typing effect for the URL itself)
   const link = document.createElement('a');
-  link.href    = 'https://www.linkedin.com/in/sbibek';
-  link.target  = '_blank';
-  link.rel     = 'noopener';
+  link.href = 'https://www.linkedin.com/in/sbibek';
+  link.target = '_blank';
+  link.rel = 'noopener';
   link.textContent = 'LinkedIn';
   calloutTextEl.appendChild(link);
 
@@ -389,8 +403,8 @@ async function runIntro() {
 
   // Restore
   hintEl.classList.remove('intro-mode');
-  startTs   = null;
-  prevT     = 0;
+  startTs = null;
+  prevT = 0;
   introMode = false;
 }
 
@@ -402,9 +416,9 @@ const KEY_MAP = {
 };
 
 function selectVariation(idx) {
-  varIndex  = idx;
-  startTs   = null;
-  prevT     = 0;
+  varIndex = idx;
+  startTs = null;
+  prevT = 0;
   isShaking = false;
   showLabel(VARIATIONS[idx].name, idx);
 }
@@ -425,9 +439,10 @@ document.addEventListener('click', () => {
 });
 
 // ── Populate hint with key map ────────────────────────
-hintEl.innerHTML = VARIATIONS
-  .map((v, i) => `<span class="k">${i === 9 ? '0' : i + 1}</span>${v.name}`)
-  .join('  ·  ');
+const SHORT = ['normal', 'high', 'hop', 'robot', 'star', 'tuck', 'splits', 'flail', '×2', 'power'];
+hintEl.innerHTML =
+  SHORT.map((n, i) => `<span class="k">${i === 9 ? '0' : i + 1}</span>${n}`).join(' · ')
+  + '<br><span class="enter-hint"><span class="k">↵</span> about me</span>';
 
 // ── Start ──────────────────────────────────────────────
 requestAnimationFrame(loop);
