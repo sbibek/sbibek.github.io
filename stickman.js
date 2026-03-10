@@ -432,7 +432,14 @@ document.addEventListener('keydown', (e) => {
     selectVariation(e.key.charCodeAt(0) % VARIATIONS.length);
   }
 });
-// Click still cycles forward (blocked during intro)
+// Click stickman to show intro
+stickmanEl.addEventListener('click', (e) => {
+  if (introMode) return;
+  e.stopPropagation(); // prevent document click from cycling
+  runIntro();
+});
+
+// Click anywhere else still cycles forward (blocked during intro)
 document.addEventListener('click', () => {
   if (introMode) return;
   selectVariation((varIndex + 1) % VARIATIONS.length);
@@ -442,7 +449,7 @@ document.addEventListener('click', () => {
 const SHORT = ['normal', 'high', 'hop', 'robot', 'star', 'tuck', 'splits', 'flail', '×2', 'power'];
 hintEl.innerHTML =
   SHORT.map((n, i) => `<span class="k">${i === 9 ? '0' : i + 1}</span>${n}`).join(' · ')
-  + '<br><span class="enter-hint"><span class="k">↵</span> about me</span>';
+  + '<br><span class="enter-hint">click stickman or <span class="k">↵</span> about me</span>';
 
 // ── Start ──────────────────────────────────────────────
 requestAnimationFrame(loop);
